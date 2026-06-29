@@ -30,7 +30,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
           <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
-          
+
           {/* Protected Routes */}
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/add" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
@@ -39,11 +39,14 @@ function App() {
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/subscriptions" element={<ProtectedRoute><Subscriptions /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          
+
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
+      <footer className="w-full py-6 text-center text-sm text-[var(--text-secondary)] border-t border-[var(--border-color)] bg-[var(--bg-secondary)] mt-auto">
+        Copyright &copy; 2026 SmartExpense Manager - All Rights Reserved.
+      </footer>
       <Toaster position="bottom-right" />
     </div>
   );

@@ -22,7 +22,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
               <Wallet className="text-blue-500" size={28} />
-              <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent hidden sm:block">
+              <span className="font-extrabold text-xl tracking-wide text-[var(--text-primary)] hidden sm:block">
                 ExpensiQ
               </span>
             </Link>

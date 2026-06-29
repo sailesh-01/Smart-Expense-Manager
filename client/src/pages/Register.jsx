@@ -29,18 +29,12 @@ const Register = () => {
   };
 
   return (
-    <div 
-      className={`flex-grow flex items-center justify-center w-full ${
-        darkMode 
-        ? "bg-[#051424] bg-[radial-gradient(at_0%_0%,_hsla(185,100%,50%,0.15)_0,transparent_50%),radial-gradient(at_100%_100%,_hsla(210,100%,30%,0.2)_0,transparent_50%)]"
-        : "bg-[#f8fafc] bg-[radial-gradient(at_0%_0%,_hsla(185,100%,50%,0.10)_0,transparent_50%),radial-gradient(at_100%_100%,_hsla(210,100%,30%,0.10)_0,transparent_50%)]"
-      }`}
-    >
+    <div className="flex-grow flex items-center justify-center w-full bg-[var(--bg-primary)]">
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-6">
         
         {/* Left Side: Illustration */}
         <div className="hidden lg:flex flex-col items-center justify-center relative">
-          <div className="absolute -z-10 w-[400px] h-[400px] bg-[#00f2ff]/10 blur-[100px] rounded-full"></div>
+
           <div className="flex justify-center items-center w-full">
             <img 
               className="w-full max-w-md object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]" 
@@ -58,14 +52,7 @@ const Register = () => {
 
         {/* Right Side: Register Card */}
         <div className="w-full max-w-md mx-auto">
-          <div className={`rounded-[2rem] p-10 relative overflow-hidden backdrop-blur-xl border shadow-2xl ${
-            darkMode 
-              ? "bg-white/5 border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]" 
-              : "bg-white/50 border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)]"
-          }`}>
-            
-            {/* Subtle Inner Glow */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none bg-gradient-to-br from-white/10 to-transparent opacity-50"></div>
+          <div className="card rounded-2xl p-10 shadow-sm">
             
             <div className="relative z-10">
               <div className="mb-10 text-center lg:text-left">
