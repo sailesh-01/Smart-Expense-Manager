@@ -1,6 +1,6 @@
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
-import { Save, Moon, Sun, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { Save, Moon, Sun, AlertTriangle, Plus, Trash2, Info } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
@@ -204,6 +204,25 @@ const Settings = () => {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* About Us */}
+      <div className="card rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-bold mb-4 flex items-center">
+          <Info className="mr-2 text-blue-500" size={20} />
+          About Us
+        </h2>
+        <div className="space-y-4 text-sm text-[var(--text-secondary)]">
+          <p>
+            Welcome to <strong>ExpensiQ</strong> (formerly Smart Expense Manager). We built this tool with a singular mission: to make personal finance tracking elegant, intuitive, and highly actionable.
+          </p>
+          <p>
+            Whether you are meticulously planning a monthly budget, keeping an eye on upcoming subscription renewals, or just trying to figure out where your money went last weekend, ExpensiQ is designed to provide you with crystal-clear insights without any clutter.
+          </p>
+          <p className="pt-2 border-t border-[var(--border-color)]">
+            Version 1.0.0 &bull; Crafted with precision.
+          </p>
         </div>
       </div>
 
