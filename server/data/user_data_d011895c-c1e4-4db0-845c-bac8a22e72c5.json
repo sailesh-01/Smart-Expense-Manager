@@ -1,0 +1,13 @@
+{
+  "expenses": [],
+  "budgets": {
+    "Food": 300,
+    "Transport": 100,
+    "Books": 50,
+    "Rent": 800,
+    "Entertainment": 150,
+    "Health": 100,
+    "Clothing": 100,
+    "Others": 50
+  }
+}

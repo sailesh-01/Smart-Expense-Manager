@@ -1,0 +1,175 @@
+{
+  "budgets": {
+    "Food": 300,
+    "Transport": 100,
+    "Books": 50,
+    "Rent": 800,
+    "Entertainment": 150,
+    "Health": 100,
+    "Clothing": 100,
+    "Others": 50
+  },
+  "expenses": [
+    {
+      "id": "1",
+      "amount": 25.5,
+      "category": "Food",
+      "date": "2026-06-25T12:00:00.000Z",
+      "notes": "Lunch"
+    },
+    {
+      "id": "2",
+      "amount": 800,
+      "category": "Rent",
+      "date": "2026-06-01T00:00:00.000Z",
+      "notes": "June Rent"
+    },
+    {
+      "id": "3",
+      "amount": 15,
+      "category": "Transport",
+      "date": "2026-06-05T08:30:00.000Z",
+      "notes": "Bus pass"
+    },
+    {
+      "id": "4",
+      "amount": 120,
+      "category": "Books",
+      "date": "2026-06-10T14:15:00.000Z",
+      "notes": "Textbooks"
+    },
+    {
+      "id": "5",
+      "amount": 45,
+      "category": "Entertainment",
+      "date": "2026-06-15T20:00:00.000Z",
+      "notes": "Movie night"
+    },
+    {
+      "id": "6",
+      "amount": 30,
+      "category": "Health",
+      "date": "2026-06-20T10:00:00.000Z",
+      "notes": "Pharmacy"
+    },
+    {
+      "id": "7",
+      "amount": 60,
+      "category": "Clothing",
+      "date": "2026-06-22T16:00:00.000Z",
+      "notes": "T-shirts"
+    },
+    {
+      "id": "8",
+      "amount": 20,
+      "category": "Food",
+      "date": "2026-06-26T18:00:00.000Z",
+      "notes": "Dinner"
+    },
+    {
+      "id": "9",
+      "amount": 12,
+      "category": "Food",
+      "date": "2026-05-28T12:00:00.000Z",
+      "notes": "Lunch"
+    },
+    {
+      "id": "10",
+      "amount": 800,
+      "category": "Rent",
+      "date": "2026-05-01T00:00:00.000Z",
+      "notes": "May Rent"
+    },
+    {
+      "id": "11",
+      "amount": 20,
+      "category": "Transport",
+      "date": "2026-05-05T08:30:00.000Z",
+      "notes": "Train"
+    },
+    {
+      "id": "12",
+      "amount": 50,
+      "category": "Entertainment",
+      "date": "2026-05-12T20:00:00.000Z",
+      "notes": "Concert"
+    },
+    {
+      "id": "13",
+      "amount": 15,
+      "category": "Others",
+      "date": "2026-05-18T10:00:00.000Z",
+      "notes": "Stationery"
+    },
+    {
+      "id": "14",
+      "amount": 22,
+      "category": "Food",
+      "date": "2026-05-25T13:00:00.000Z",
+      "notes": "Groceries"
+    },
+    {
+      "id": "15",
+      "amount": 80,
+      "category": "Clothing",
+      "date": "2026-05-20T15:00:00.000Z",
+      "notes": "Shoes"
+    },
+    {
+      "id": "16",
+      "amount": 40,
+      "category": "Food",
+      "date": "2026-04-28T12:00:00.000Z",
+      "notes": "Groceries"
+    },
+    {
+      "id": "17",
+      "amount": 800,
+      "category": "Rent",
+      "date": "2026-04-01T00:00:00.000Z",
+      "notes": "April Rent"
+    },
+    {
+      "id": "18",
+      "amount": 15,
+      "category": "Transport",
+      "date": "2026-04-05T08:30:00.000Z",
+      "notes": "Bus pass"
+    },
+    {
+      "id": "19",
+      "amount": 35,
+      "category": "Entertainment",
+      "date": "2026-04-10T20:00:00.000Z",
+      "notes": "Gaming"
+    },
+    {
+      "id": "20",
+      "amount": 55,
+      "category": "Health",
+      "date": "2026-04-15T10:00:00.000Z",
+      "notes": "Checkup"
+    },
+    {
+      "id": "21",
+      "amount": 25,
+      "category": "Food",
+      "date": "2026-04-20T19:00:00.000Z",
+      "notes": "Dinner"
+    },
+    {
+      "id": "1782651904838",
+      "amount": 50,
+      "category": "Books",
+      "date": "2026-06-28T00:00:00.000Z",
+      "notes": ""
+    },
+    {
+      "id": "1782651980555",
+      "amount": 10,
+      "category": "Transport",
+      "date": "2026-06-28T00:00:00.000Z",
+      "notes": ""
+    }
+  ]
+}
