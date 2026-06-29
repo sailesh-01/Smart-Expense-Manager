@@ -92,6 +92,41 @@ const Reports = () => {
     document.body.removeChild(link);
   };
 
+  const downloadAllCSV = async () => {
+    try {
+      const res = await api.get('/expenses');
+      const expenses = res.data;
+      if (!expenses || expenses.length === 0) {
+        toast.error('No data to export');
+        return;
+      }
+      
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Date,Type,Category,Amount,Notes\n";
+      
+      expenses.forEach(e => {
+        const date = e.date;
+        const type = e.type || 'expense';
+        const category = `"${e.category || ''}"`;
+        const amount = e.amount;
+        const notes = `"${(e.notes || '').replace(/"/g, '""')}"`;
+        csvContent += `${date},${type},${category},${amount},${notes}\n`;
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "ExpensiQ_All_Transactions.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Export successful');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to export data');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -112,7 +147,14 @@ const Reports = () => {
             className="inline-flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--bg-primary)] px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
           >
             <Download size={16} />
-            <span>Export CSV</span>
+            <span>Export Month</span>
+          </button>
+          <button
+            onClick={downloadAllCSV}
+            className="inline-flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--bg-primary)] px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">Export All</span>
           </button>
         </div>
       </div>
