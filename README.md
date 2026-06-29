@@ -1,6 +1,6 @@
-# SpendSmart – Student Expense Manager 💸
+# Expensiq – Student Expense Manager 💸
 
-SpendSmart is a modern, lightweight, full-stack web application designed specifically for students to easily log daily expenses, set category-based budget limits, and gain clear insights into their spending habits.
+Expensiq is a modern, lightweight, full-stack web application designed specifically for students to easily log daily expenses, set category-based budget limits, and gain clear insights into their spending habits.
 
 ## 🚀 Key Features
 

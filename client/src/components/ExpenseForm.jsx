@@ -3,11 +3,12 @@ import toast from 'react-hot-toast';
 import { Save } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
-const CATEGORIES = ['Food', 'Transport', 'Books', 'Rent', 'Entertainment', 'Health', 'Clothing', 'Others'];
-
 const ExpenseForm = ({ initialData, onSubmit, isLoading }) => {
-  const { currency } = useSettings();
+  const { currency, categories } = useSettings();
+  const expenseCats = categories?.expense?.length > 0 ? categories.expense : ['Food', 'Others'];
+  const incomeCats = categories?.income?.length > 0 ? categories.income : ['Salary', 'Other'];
   const [formData, setFormData] = useState({
+    type: initialData?.type || 'expense',
     amount: initialData?.amount || '',
     category: initialData?.category || 'Food',
     date: initialData?.date ? initialData.date.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -16,7 +17,15 @@ const ExpenseForm = ({ initialData, onSubmit, isLoading }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'type') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        category: value === 'income' ? incomeCats[0] : expenseCats[0]
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -38,6 +47,25 @@ const ExpenseForm = ({ initialData, onSubmit, isLoading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex justify-center mb-6">
+        <div className="bg-[var(--bg-secondary)] p-1 rounded-lg inline-flex">
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${formData.type === 'expense' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+            onClick={() => handleChange({ target: { name: 'type', value: 'expense' } })}
+          >
+            Expense
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${formData.type === 'income' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+            onClick={() => handleChange({ target: { name: 'type', value: 'income' } })}
+          >
+            Income
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Amount ({currency})</label>
@@ -67,7 +95,7 @@ const ExpenseForm = ({ initialData, onSubmit, isLoading }) => {
             onChange={handleChange}
             className="block w-full rounded-md border-[var(--border-color)] bg-[var(--bg-primary)] py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors border"
           >
-            {CATEGORIES.map(c => (
+            {(formData.type === 'income' ? incomeCats : expenseCats).map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
@@ -106,7 +134,7 @@ const ExpenseForm = ({ initialData, onSubmit, isLoading }) => {
           className="inline-flex justify-center items-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
         >
           <Save size={16} className="mr-2" />
-          {isLoading ? 'Saving...' : 'Save Expense'}
+          {isLoading ? 'Saving...' : `Save ${formData.type === 'income' ? 'Income' : 'Expense'}`}
         </button>
       </div>
     </form>

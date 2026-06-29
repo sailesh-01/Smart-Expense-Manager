@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { format, parseISO } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { PlusCircle, ArrowRight } from 'lucide-react';
+import { PlusCircle, ArrowRight, Calendar, DollarSign } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 const COLORS = {
@@ -20,10 +20,11 @@ const COLORS = {
 const Dashboard = () => {
   const { currency } = useSettings();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ total: 0, budgetTotal: 0 });
+  const [stats, setStats] = useState({ total: 0, budgetTotal: 0, totalIncome: 0, netBalance: 0 });
   const [pieData, setPieData] = useState([]);
   const [lineData, setLineData] = useState([]);
   const [recentExpenses, setRecentExpenses] = useState([]);
+  const [upcomingBills, setUpcomingBills] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -34,20 +35,24 @@ const Dashboard = () => {
     try {
       const month = format(new Date(), 'yyyy-MM');
       
-      const [expensesRes, budgetRes, reportRes] = await Promise.all([
+      const [expensesRes, budgetRes, reportRes, subsRes] = await Promise.all([
         api.get(`/expenses?month=${month}`),
         api.get('/budget'),
-        api.get(`/reports/monthly?month=${month}`)
+        api.get(`/reports/monthly?month=${month}`),
+        api.get('/subscriptions')
       ]);
 
       const expenses = expensesRes.data;
       const budgets = budgetRes.data;
       const report = reportRes.data;
+      const subs = subsRes.data;
 
       // Stats
       const budgetTotal = Object.values(budgets).reduce((a, b) => a + b, 0);
       setStats({
         total: report.total,
+        totalIncome: report.totalIncome || 0,
+        netBalance: report.netBalance || 0,
         budgetTotal
       });
 
@@ -64,8 +69,10 @@ const Dashboard = () => {
         dailyTotals[i] = 0;
       }
       expenses.forEach(e => {
-        const day = new Date(e.date).getDate();
-        dailyTotals[day] += e.amount;
+        if (!e.type || e.type === 'expense') {
+          const day = new Date(e.date).getDate();
+          dailyTotals[day] += e.amount;
+        }
       });
       
       const lineD = Object.entries(dailyTotals).map(([day, amount]) => ({
@@ -76,6 +83,32 @@ const Dashboard = () => {
 
       // Recent Expenses
       setRecentExpenses(expenses.slice(0, 5));
+
+      // Upcoming Bills
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const in7Days = new Date(today);
+      in7Days.setDate(today.getDate() + 7);
+
+      const upcoming = [];
+      subs.forEach(sub => {
+        let nextDate = new Date(sub.startDate);
+        while (nextDate < today) {
+          if (sub.frequency === 'weekly') {
+            nextDate.setDate(nextDate.getDate() + 7);
+          } else if (sub.frequency === 'monthly') {
+            nextDate.setMonth(nextDate.getMonth() + 1);
+          } else {
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+          }
+        }
+        
+        if (nextDate >= today && nextDate <= in7Days) {
+          upcoming.push({ ...sub, nextDate });
+        }
+      });
+      
+      setUpcomingBills(upcoming.sort((a, b) => a.nextDate - b.nextDate));
       
     } catch (err) {
       console.error('Error fetching dashboard data', err);
@@ -105,21 +138,27 @@ const Dashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="card rounded-xl shadow-sm p-6">
+          <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Total Income</h3>
+          <p className="text-3xl font-bold text-green-500">{currency}{stats.totalIncome.toFixed(2)}</p>
+        </div>
         <div className="card rounded-xl shadow-sm p-6">
           <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Total Spent</h3>
           <p className="text-3xl font-bold">{currency}{stats.total.toFixed(2)}</p>
         </div>
         <div className="card rounded-xl shadow-sm p-6">
-          <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Total Budget</h3>
-          <p className="text-3xl font-bold">{currency}{stats.budgetTotal.toFixed(2)}</p>
+          <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Net Balance</h3>
+          <p className={`text-3xl font-bold ${stats.netBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {stats.netBalance >= 0 ? '+' : '-'}{currency}{Math.abs(stats.netBalance).toFixed(2)}
+          </p>
         </div>
         <div className="card rounded-xl shadow-sm p-6">
-          <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Remaining</h3>
+          <h3 className="text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">Budget Left</h3>
           <p className={`text-3xl font-bold ${isOverBudget ? 'text-red-500' : 'text-green-500'}`}>
             {currency}{isOverBudget ? '0.00' : remaining.toFixed(2)}
           </p>
-          {isOverBudget && <p className="text-xs text-red-500 mt-1">Over budget by {currency}{Math.abs(remaining).toFixed(2)}</p>}
+          {isOverBudget && <p className="text-xs text-red-500 mt-1">Over by {currency}{Math.abs(remaining).toFixed(2)}</p>}
         </div>
       </div>
 
@@ -174,35 +213,81 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="card rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
-          <h3 className="font-bold">Recent Transactions</h3>
-          <Link to="/expenses" className="text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1 font-medium">
-            View All <ArrowRight size={16} />
-          </Link>
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Transactions */}
+        <div className="card rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+            <h3 className="font-bold">Recent Transactions</h3>
+            <Link to="/expenses" className="text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1 font-medium">
+              View All <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="divide-y divide-[var(--border-color)]">
+            {recentExpenses.length > 0 ? (
+              recentExpenses.map(expense => (
+                <div key={expense.id} className="p-4 sm:px-6 flex justify-between items-center hover:bg-[var(--bg-primary)] transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${COLORS[expense.category] || COLORS.Others}20`, color: COLORS[expense.category] || COLORS.Others }}>
+                      {expense.category.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{expense.category}</p>
+                      <p className="text-xs text-[var(--text-secondary)]">{expense.notes || 'No notes'} • {format(new Date(expense.date), 'MMM dd')}</p>
+                    </div>
+                  </div>
+                  <div className={`font-bold text-sm ${expense.type === 'income' ? 'text-green-500' : 'text-[var(--text-primary)]'}`}>
+                    {expense.type === 'income' ? '+' : '-'}{currency}{expense.amount.toFixed(2)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-[var(--text-secondary)]">No recent transactions.</div>
+            )}
+          </div>
         </div>
-        <div className="divide-y divide-[var(--border-color)]">
-          {recentExpenses.length > 0 ? (
-            recentExpenses.map(expense => (
-              <div key={expense.id} className="p-4 sm:px-6 flex justify-between items-center hover:bg-[var(--bg-primary)] transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${COLORS[expense.category] || COLORS.Others}20`, color: COLORS[expense.category] || COLORS.Others }}>
-                    {expense.category.charAt(0)}
+
+        {/* Upcoming Bills */}
+        <div className="card rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+            <h3 className="font-bold flex items-center gap-2"><Calendar size={18} className="text-blue-500" /> Upcoming Bills (Next 7 Days)</h3>
+            <Link to="/subscriptions" className="text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1 font-medium">
+              Manage <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="divide-y divide-[var(--border-color)]">
+            {upcomingBills.length > 0 ? (
+              upcomingBills.map(bill => (
+                <div key={bill.id} className="p-4 sm:px-6 flex justify-between items-center hover:bg-[var(--bg-primary)] transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+                      <DollarSign size={20} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{bill.name}</p>
+                      <p className="text-xs text-[var(--text-secondary)] capitalize">Due: {format(bill.nextDate, 'MMM dd, yyyy')}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">{expense.category}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">{expense.notes || 'No notes'} • {format(new Date(expense.date), 'MMM dd')}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="font-bold text-sm text-[var(--text-primary)]">
+                      {currency}{bill.amount.toFixed(2)}
+                    </div>
+                    <Link
+                      to={`/add?type=expense&amount=${bill.amount}&category=${bill.category}&notes=${bill.name}`}
+                      className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 px-2 py-1 rounded text-xs font-medium transition-colors"
+                    >
+                      Pay
+                    </Link>
                   </div>
                 </div>
-                <div className="font-bold text-sm">
-                  {currency}{expense.amount.toFixed(2)}
-                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-[var(--text-secondary)] flex flex-col items-center justify-center">
+                <Calendar size={32} className="text-gray-300 dark:text-gray-600 mb-2" />
+                <p>No bills due in the next 7 days.</p>
               </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-[var(--text-secondary)]">No recent transactions.</div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

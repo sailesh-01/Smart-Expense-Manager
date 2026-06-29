@@ -1,6 +1,7 @@
 import { useSettings } from '../context/SettingsContext';
 import { useAuth } from '../context/AuthContext';
-import { Save, Moon, Sun, AlertTriangle } from 'lucide-react';
+import { Save, Moon, Sun, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 
@@ -13,8 +14,42 @@ const CURRENCIES = [
 ];
 
 const Settings = () => {
-  const { currency, setCurrency, darkMode, setDarkMode } = useSettings();
+  const { currency, setCurrency, darkMode, setDarkMode, categories, fetchCategories } = useSettings();
   const { logout } = useAuth();
+  
+  const [newCategoryType, setNewCategoryType] = useState('expense');
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    try {
+      await api.post('/categories', { type: newCategoryType, category: newCategoryName });
+      toast.success('Category added');
+      setNewCategoryName('');
+      fetchCategories();
+    } catch (err) {
+      toast.error('Failed to add category');
+    }
+  };
+
+  const handleDeleteCategory = async (type, category) => {
+    const fallback = type === 'income' ? 'Other' : 'Others';
+    if (category === fallback) {
+      toast.error(`Cannot delete default fallback category (${fallback})`);
+      return;
+    }
+    
+    if (window.confirm(`Delete ${category}? Past transactions will be reassigned to ${fallback}.`)) {
+      try {
+        await api.delete(`/categories/${type}/${category}`);
+        toast.success('Category deleted');
+        fetchCategories();
+      } catch (err) {
+        toast.error('Failed to delete category');
+      }
+    }
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -111,6 +146,65 @@ const Settings = () => {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Category Management Section */}
+      <div className="card rounded-xl shadow-sm p-6">
+        <h2 className="text-lg font-semibold border-b border-[var(--border-color)] pb-2 mb-4">Category Management</h2>
+        
+        <form onSubmit={handleAddCategory} className="flex gap-2 mb-6">
+          <select 
+            value={newCategoryType}
+            onChange={(e) => setNewCategoryType(e.target.value)}
+            className="rounded-md border-[var(--border-color)] bg-[var(--bg-primary)] py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+          <input 
+            type="text" 
+            placeholder="New Category Name" 
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+            className="flex-1 rounded-md border-[var(--border-color)] bg-[var(--bg-primary)] py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+          />
+          <button type="submit" className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors">
+            <Plus size={20} />
+          </button>
+        </form>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">Expense Categories</h3>
+            <div className="space-y-2">
+              {categories?.expense?.map(cat => (
+                <div key={cat} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2 rounded-md">
+                  <span className="text-sm">{cat}</span>
+                  {cat !== 'Others' && (
+                    <button onClick={() => handleDeleteCategory('expense', cat)} className="text-red-500 hover:text-red-700">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">Income Categories</h3>
+            <div className="space-y-2">
+              {categories?.income?.map(cat => (
+                <div key={cat} className="flex justify-between items-center bg-[var(--bg-secondary)] p-2 rounded-md">
+                  <span className="text-sm">{cat}</span>
+                  {cat !== 'Other' && (
+                    <button onClick={() => handleDeleteCategory('income', cat)} className="text-red-500 hover:text-red-700">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Danger Zone */}

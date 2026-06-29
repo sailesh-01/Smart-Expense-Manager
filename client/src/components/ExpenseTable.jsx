@@ -19,7 +19,7 @@ const ExpenseTable = ({ expenses, onDelete }) => {
   if (!expenses || expenses.length === 0) {
     return (
       <div className="p-8 text-center text-[var(--text-secondary)]">
-        No expenses found. Add some to get started!
+        No transactions found. Add some to get started!
       </div>
     );
   }
@@ -53,14 +53,14 @@ const ExpenseTable = ({ expenses, onDelete }) => {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)]">
                 {expense.notes || '-'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                {currency}{expense.amount.toFixed(2)}
+              <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${expense.type === 'income' ? 'text-green-500' : ''}`}>
+                {expense.type === 'income' ? '+' : '-'}{currency}{expense.amount.toFixed(2)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
                   onClick={() => onDelete(expense.id)}
                   className="text-red-500 hover:text-red-700 transition-colors"
-                  aria-label="Delete expense"
+                  aria-label="Delete transaction"
                 >
                   <Trash2 size={18} />
                 </button>

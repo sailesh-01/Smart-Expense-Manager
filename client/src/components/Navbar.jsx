@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, PlusCircle, List, Settings as SettingsIcon, PieChart, Wallet, SlidersHorizontal, LogOut } from 'lucide-react';
+import { Home, PlusCircle, List, Settings as SettingsIcon, PieChart, Wallet, SlidersHorizontal, LogOut, Repeat } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -8,10 +8,10 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
-    { name: 'Add', path: '/add', icon: <PlusCircle size={20} /> },
     { name: 'Expenses', path: '/expenses', icon: <List size={20} /> },
     { name: 'Budget', path: '/budget', icon: <SettingsIcon size={20} /> },
     { name: 'Reports', path: '/reports', icon: <PieChart size={20} /> },
+    { name: 'Subs', path: '/subscriptions', icon: <Repeat size={20} /> },
     { name: 'Settings', path: '/settings', icon: <SlidersHorizontal size={20} /> },
   ];
 
@@ -23,21 +23,20 @@ const Navbar = () => {
             <Link to="/" className="flex items-center gap-2">
               <Wallet className="text-blue-500" size={28} />
               <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent hidden sm:block">
-                SpendSmart
+                ExpensiQ
               </span>
             </Link>
           </div>
-          
+
           <div className="flex items-center space-x-1 sm:space-x-4">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === item.path
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === item.path
                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
-                }`}
+                  }`}
               >
                 {item.icon}
                 <span className="hidden md:block">{item.name}</span>

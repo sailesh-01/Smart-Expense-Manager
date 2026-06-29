@@ -38,9 +38,30 @@ class FileAdapter extends DatabaseService {
       budgets: {
         Food: 300, Transport: 100, Books: 50, Rent: 800,
         Entertainment: 150, Health: 100, Clothing: 100, Others: 50
-      }
+      },
+      expenseCategories: ['Food', 'Transport', 'Books', 'Rent', 'Entertainment', 'Health', 'Clothing', 'Others'],
+      incomeCategories: ['Salary', 'Allowance', 'Gift', 'Freelance', 'Other'],
+      subscriptions: []
     };
-    return await this._readJson(this._getUserDataPath(userId), defaultData);
+    const data = await this._readJson(this._getUserDataPath(userId), defaultData);
+    
+    let modified = false;
+    if (!data.expenseCategories) {
+      data.expenseCategories = [...defaultData.expenseCategories];
+      modified = true;
+    }
+    if (!data.incomeCategories) {
+      data.incomeCategories = [...defaultData.incomeCategories];
+      modified = true;
+    }
+    if (!data.subscriptions) {
+      data.subscriptions = [];
+      modified = true;
+    }
+    if (modified) {
+      await this._writeUserData(userId, data);
+    }
+    return data;
   }
 
   async _writeUserData(userId, data) {
@@ -125,9 +146,76 @@ class FileAdapter extends DatabaseService {
       budgets: {
         Food: 300, Transport: 100, Books: 50, Rent: 800,
         Entertainment: 150, Health: 100, Clothing: 100, Others: 50
-      }
+      },
+      expenseCategories: ['Food', 'Transport', 'Books', 'Rent', 'Entertainment', 'Health', 'Clothing', 'Others'],
+      incomeCategories: ['Salary', 'Allowance', 'Gift', 'Freelance', 'Other'],
+      subscriptions: []
     };
     await this._writeUserData(userId, defaultData);
+  }
+
+  async getCategories(userId) {
+    const userData = await this._readUserData(userId);
+    return {
+      expense: userData.expenseCategories,
+      income: userData.incomeCategories
+    };
+  }
+
+  async addCategory(userId, type, category) {
+    const userData = await this._readUserData(userId);
+    const key = type === 'income' ? 'incomeCategories' : 'expenseCategories';
+    if (!userData[key].includes(category)) {
+      userData[key].push(category);
+      await this._writeUserData(userId, userData);
+    }
+    return userData[key];
+  }
+
+  async deleteCategory(userId, type, category) {
+    const userData = await this._readUserData(userId);
+    const key = type === 'income' ? 'incomeCategories' : 'expenseCategories';
+    const fallback = type === 'income' ? 'Other' : 'Others';
+    
+    // Cannot delete fallback
+    if (category === fallback) return userData[key];
+
+    userData[key] = userData[key].filter(c => c !== category);
+    
+    // Reassign expenses
+    userData.expenses = userData.expenses.map(e => {
+      const eType = e.type || 'expense';
+      if (eType === type && e.category === category) {
+        return { ...e, category: fallback };
+      }
+      return e;
+    });
+
+    await this._writeUserData(userId, userData);
+    return userData[key];
+  }
+
+  async getSubscriptions(userId) {
+    const userData = await this._readUserData(userId);
+    return userData.subscriptions || [];
+  }
+
+  async addSubscription(userId, subscriptionData) {
+    const userData = await this._readUserData(userId);
+    const newSubscription = {
+      id: Date.now().toString(),
+      ...subscriptionData
+    };
+    userData.subscriptions = userData.subscriptions || [];
+    userData.subscriptions.push(newSubscription);
+    await this._writeUserData(userId, userData);
+    return newSubscription;
+  }
+
+  async deleteSubscription(userId, subscriptionId) {
+    const userData = await this._readUserData(userId);
+    userData.subscriptions = (userData.subscriptions || []).filter(sub => sub.id !== subscriptionId);
+    await this._writeUserData(userId, userData);
   }
 
   async deleteUserAccount(userId) {

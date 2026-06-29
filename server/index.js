@@ -128,7 +128,8 @@ app.post('/api/expenses', [
   body('amount').isNumeric(),
   body('category').isString().notEmpty(),
   body('date').isISO8601(),
-  body('notes').optional().isString()
+  body('notes').optional().isString(),
+  body('type').optional().isIn(['income', 'expense'])
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -136,6 +137,7 @@ app.post('/api/expenses', [
   try {
     const newExpense = {
       id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+      type: req.body.type || 'expense',
       ...req.body
     };
     
@@ -156,6 +158,90 @@ app.delete('/api/expenses/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete expense' });
+  }
+});
+
+// --- CATEGORY ENDPOINTS ---
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    const categories = await dbService.getCategories(req.userId);
+    res.json(categories);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+app.post('/api/categories', [
+  body('type').isIn(['income', 'expense']),
+  body('category').isString().notEmpty().trim()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    const { type, category } = req.body;
+    const categories = await dbService.addCategory(req.userId, type, category);
+    res.status(201).json(categories);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add category' });
+  }
+});
+
+app.delete('/api/categories/:type/:category', async (req, res) => {
+  try {
+    const { type, category } = req.params;
+    if (!['income', 'expense'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid type' });
+    }
+    const categories = await dbService.deleteCategory(req.userId, type, category);
+    res.json(categories);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+});
+
+// --- SUBSCRIPTION ENDPOINTS ---
+
+app.get('/api/subscriptions', async (req, res) => {
+  try {
+    const subs = await dbService.getSubscriptions(req.userId);
+    res.json(subs);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch subscriptions' });
+  }
+});
+
+app.post('/api/subscriptions', [
+  body('name').isString().notEmpty().trim(),
+  body('amount').isNumeric(),
+  body('category').isString().notEmpty(),
+  body('frequency').isIn(['weekly', 'monthly', 'yearly']),
+  body('startDate').isISO8601()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    const newSub = await dbService.addSubscription(req.userId, req.body);
+    res.status(201).json(newSub);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add subscription' });
+  }
+});
+
+app.delete('/api/subscriptions/:id', async (req, res) => {
+  try {
+    await dbService.deleteSubscription(req.userId, req.params.id);
+    res.json({ message: 'Subscription deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete subscription' });
   }
 });
 
@@ -215,16 +301,24 @@ app.get('/api/reports/monthly', async (req, res) => {
     const { month } = req.query;
     if (!month) return res.status(400).json({ error: 'Month query param required (YYYY-MM)' });
     
-    const allExpenses = await dbService.getExpenses(req.userId);
-    const expenses = allExpenses.filter(e => e.date.startsWith(month));
+    const allTransactions = await dbService.getExpenses(req.userId);
+    const transactions = allTransactions.filter(e => e.date.startsWith(month));
     
-    let total = 0;
+    let totalExpense = 0;
+    let totalIncome = 0;
     const categoryTotals = {};
     
-    expenses.forEach(e => {
-      total += e.amount;
-      categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+    transactions.forEach(t => {
+      const type = t.type || 'expense';
+      if (type === 'income') {
+        totalIncome += t.amount;
+      } else {
+        totalExpense += t.amount;
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+      }
     });
+    
+    const netBalance = totalIncome - totalExpense;
     
     let topCategory = null;
     let maxSpent = 0;
@@ -236,9 +330,9 @@ app.get('/api/reports/monthly', async (req, res) => {
     }
     
     const daysInMonth = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0).getDate();
-    const avgDaily = total / daysInMonth;
+    const avgDaily = totalExpense / daysInMonth;
 
-    res.json({ month, total, categoryTotals, topCategory, avgDaily });
+    res.json({ month, total: totalExpense, totalIncome, netBalance, categoryTotals, topCategory, avgDaily });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to generate report' });
@@ -250,8 +344,8 @@ app.get('/api/alerts', async (req, res) => {
     const { month } = req.query;
     if (!month) return res.status(400).json({ error: 'Month required' });
 
-    const allExpenses = await dbService.getExpenses(req.userId);
-    const expenses = allExpenses.filter(e => e.date.startsWith(month));
+    const allTransactions = await dbService.getExpenses(req.userId);
+    const expenses = allTransactions.filter(e => e.date.startsWith(month) && (e.type === 'expense' || !e.type));
     const userBudgets = await dbService.getBudgets(req.userId);
     
     const categoryTotals = {};

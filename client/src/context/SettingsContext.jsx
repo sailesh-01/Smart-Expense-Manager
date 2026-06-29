@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const SettingsContext = createContext();
 
@@ -8,6 +10,24 @@ export const SettingsProvider = ({ children }) => {
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem('currency') || '$';
   });
+
+  const { isAuthenticated } = useAuth();
+  const [categories, setCategories] = useState({ expense: [], income: [] });
+
+  const fetchCategories = useCallback(async () => {
+    if (isAuthenticated) {
+      try {
+        const res = await api.get('/categories');
+        setCategories(res.data);
+      } catch (err) {
+        console.error('Failed to fetch categories', err);
+      }
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
@@ -29,7 +49,7 @@ export const SettingsProvider = ({ children }) => {
   }, [darkMode]);
 
   return (
-    <SettingsContext.Provider value={{ currency, setCurrency, darkMode, setDarkMode }}>
+    <SettingsContext.Provider value={{ currency, setCurrency, darkMode, setDarkMode, categories, fetchCategories }}>
       {children}
     </SettingsContext.Provider>
   );

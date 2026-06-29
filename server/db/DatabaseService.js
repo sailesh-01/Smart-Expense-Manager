@@ -46,6 +46,30 @@ class DatabaseService {
   async deleteUserAccount(userId) {
     throw new Error('Not implemented');
   }
+
+  async getCategories(userId) {
+    throw new Error('Not implemented');
+  }
+
+  async addCategory(userId, type, category) {
+    throw new Error('Not implemented');
+  }
+
+  async deleteCategory(userId, type, category) {
+    throw new Error('Not implemented');
+  }
+
+  async getSubscriptions(userId) {
+    throw new Error('Not implemented');
+  }
+
+  async addSubscription(userId, subscriptionData) {
+    throw new Error('Not implemented');
+  }
+
+  async deleteSubscription(userId, subscriptionId) {
+    throw new Error('Not implemented');
+  }
 }
 
 module.exports = DatabaseService;

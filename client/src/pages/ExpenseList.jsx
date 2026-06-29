@@ -4,9 +4,11 @@ import ExpenseTable from '../components/ExpenseTable';
 import toast from 'react-hot-toast';
 import { Search } from 'lucide-react';
 
-const CATEGORIES = ['All', 'Food', 'Transport', 'Books', 'Rent', 'Entertainment', 'Health', 'Clothing', 'Others'];
+import { useSettings } from '../context/SettingsContext';
 
 const ExpenseList = () => {
+  const { categories } = useSettings();
+  const allCategories = ['All', ...(categories?.expense || []), ...(categories?.income || [])];
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -30,22 +32,22 @@ const ExpenseList = () => {
       setExpenses(res.data);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load expenses');
+      toast.error('Failed to load transactions');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+    if (!window.confirm('Are you sure you want to delete this transaction?')) return;
     
     try {
       await api.delete(`/expenses/${id}`);
       setExpenses(expenses.filter(e => e.id !== id));
-      toast.success('Expense deleted');
+      toast.success('Transaction deleted');
     } catch (err) {
       console.error(err);
-      toast.error('Failed to delete expense');
+      toast.error('Failed to delete transaction');
     }
   };
 
@@ -57,7 +59,7 @@ const ExpenseList = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">All Expenses</h1>
+        <h1 className="text-2xl font-bold">All Transactions</h1>
       </div>
 
       <div className="card rounded-xl shadow-sm p-4 sm:p-6 mb-6">
@@ -81,7 +83,7 @@ const ExpenseList = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
               className="block w-full rounded-md border-[var(--border-color)] bg-[var(--bg-primary)] py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm transition-colors border"
             >
-              {CATEGORIES.map(c => (
+              {allCategories.map(c => (
                 <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>
               ))}
             </select>

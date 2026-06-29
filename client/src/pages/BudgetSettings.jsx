@@ -4,10 +4,11 @@ import BudgetCard from '../components/BudgetCard';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
-
-const CATEGORIES = ['Food', 'Transport', 'Books', 'Rent', 'Entertainment', 'Health', 'Clothing', 'Others'];
+import { useSettings } from '../context/SettingsContext';
 
 const BudgetSettings = () => {
+  const { categories } = useSettings();
+  const expenseCategories = categories?.expense || ['Food', 'Others'];
   const [budgets, setBudgets] = useState({});
   const [spent, setSpent] = useState({});
   const [loading, setLoading] = useState(true);
@@ -70,7 +71,7 @@ const BudgetSettings = () => {
         <div className="text-center p-8">Loading...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CATEGORIES.map(cat => (
+          {expenseCategories.map(cat => (
             <BudgetCard
               key={cat}
               category={cat}

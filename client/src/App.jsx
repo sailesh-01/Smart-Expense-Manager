@@ -14,6 +14,7 @@ import ExpenseList from './pages/ExpenseList';
 import BudgetSettings from './pages/BudgetSettings';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Subscriptions from './pages/Subscriptions';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/expenses" element={<ProtectedRoute><ExpenseList /></ProtectedRoute>} />
           <Route path="/budget" element={<ProtectedRoute><BudgetSettings /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          <Route path="/subscriptions" element={<ProtectedRoute><Subscriptions /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           
           {/* Catch all */}

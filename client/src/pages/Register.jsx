@@ -49,7 +49,7 @@ const Register = () => {
             />
           </div>
           <div className="mt-8 text-center space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-[#00dbe7]">Join SpendSmart</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-[#00dbe7]">Join ExpensiQ</h2>
             <p className="text-lg text-[var(--text-secondary)] max-w-md mx-auto">
               Start experiencing the future of personal finance today.
             </p>

@@ -9,5 +9,23 @@
     "Health": 100,
     "Clothing": 100,
     "Others": 50
-  }
+  },
+  "expenseCategories": [
+    "Food",
+    "Transport",
+    "Books",
+    "Rent",
+    "Entertainment",
+    "Health",
+    "Clothing",
+    "Others"
+  ],
+  "incomeCategories": [
+    "Salary",
+    "Allowance",
+    "Gift",
+    "Freelance",
+    "Other"
+  ],
+  "subscriptions": []
 }
